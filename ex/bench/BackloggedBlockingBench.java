@@ -24,7 +24,7 @@ public class BackloggedBlockingBench implements ex.Bench {
 
         var threads = new ArrayList<Thread>();
         for (int i = 0; i < read; ++i) {
-            threads.add(new Thread(() -> {
+            threads.add(ex.affinity.Affinity.pinned(() -> {
                 try {
                     for (int cnt = 0; cnt < 1_000_000 * write; cnt++) {
                         queue.wait_pop();
@@ -35,7 +35,7 @@ public class BackloggedBlockingBench implements ex.Bench {
             }));
         }
         for (int i = 0; i < write; ++i) {
-            threads.add(new Thread(() -> {
+            threads.add(ex.affinity.Affinity.pinned(() -> {
                 try {
                     for (int cnt = 0; cnt < 1_000_000 * read; cnt++) {
                         queue.wait_push(0);
@@ -54,6 +54,6 @@ public class BackloggedBlockingBench implements ex.Bench {
             thread.join();
         }
         long end = System.nanoTime();
-        return (end - start) / 1_000_000.0;
+        return (end - start) / (1_000_000.0 * read * write);
     }
 }

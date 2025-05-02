@@ -24,7 +24,7 @@ public class BackloggedConcurrentBench implements ex.Bench {
 
         var threads = new ArrayList<Thread>();
         for (int i = 0; i < read; ++i) {
-            threads.add(new Thread(() -> {
+            threads.add(ex.affinity.Affinity.pinned(() -> {
                 int cnt = 0;
                 while (cnt < 1_000_000 * write) {
                     cnt += queue.try_pop() != null ? 1 : 0;
@@ -32,7 +32,7 @@ public class BackloggedConcurrentBench implements ex.Bench {
             }));
         }
         for (int i = 0; i < write; ++i) {
-            threads.add(new Thread(() -> {
+            threads.add(ex.affinity.Affinity.pinned(() -> {
                 int cnt = 0;
                 while (cnt < 1_000_000 * read) {
                     cnt += queue.try_push(0) ? 1 : 0;

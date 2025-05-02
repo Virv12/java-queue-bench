@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) throws Exception {
+        ex.affinity.Affinity.setCores(new int[] {0, 1, 2, 3, 4, 5});
+
         var queue_factories = new ArrayList<QueueFactory<Integer>>();
         queue_factories.add(new ex.queue.JavaArrayDequeFactory<>(16));
         queue_factories.add(new ex.queue.JavaArrayBlockingQueueFactory<>(16));
