@@ -7,12 +7,12 @@ public class Main {
         ex.affinity.Affinity.setCores(new int[] {0, 1, 2, 3, 4, 5});
 
         var queue_factories = new ArrayList<QueueFactory<Integer>>();
-        queue_factories.add(new ex.queue.JavaArrayDequeFactory<>(16));
-        queue_factories.add(new ex.queue.JavaArrayBlockingQueueFactory<>(16));
+        queue_factories.add(new ex.queue.JavaArrayDequeFactory<>(128));
+        queue_factories.add(new ex.queue.JavaArrayBlockingQueueFactory<>(128));
         queue_factories.add(new ex.queue.JavaConcurrentLinkedQueueFactory<>());
         queue_factories.add(new ex.queue.JavaLinkedListFactory<>());
         queue_factories.add(new ex.queue.JavaLinkedBlockingQueueFactory<>());
-        queue_factories.add(new ex.queue.ConcurrentArrayQueueFactory<>(16));
+        queue_factories.add(new ex.queue.ConcurrentArrayQueueFactory<>(128));
         queue_factories.add(new ex.queue.LinkedListFactory<>());
 
         var decorators = new ArrayList<QueueFactoryDecorator>();
@@ -23,6 +23,10 @@ public class Main {
 
         var benches = new ArrayList<Bench>();
         benches.add(new ex.bench.BaseBench());
+        benches.add(new ex.bench.BurstConcurrentReadBench(2));
+        benches.add(new ex.bench.BurstConcurrentWriteBench(2));
+        benches.add(new ex.bench.BurstBlockingWriteBench(2));
+        benches.add(new ex.bench.BurstBlockingWriteBench(2));
         benches.add(new ex.bench.BackloggedConcurrentBench(1, 1));
         benches.add(new ex.bench.BackloggedConcurrentBench(1, 3));
         benches.add(new ex.bench.BackloggedConcurrentBench(3, 1));
@@ -41,9 +45,18 @@ public class Main {
             }
         }
 
+        long nop = 1000000000;
+        for (int i = 0; i < 1_000_000; ++i) {
+            var start = System.nanoTime();
+            var end = System.nanoTime();
+            nop = Math.min(nop, end - start);
+        }
+        System.out.println("nop: " + nop + "ns");
+
         for (var queue_factory : queue_factories) {
             for (var bench : benches) {
-                var res = bench.run(queue_factory);
+                bench.run(queue_factory, nop);
+                var res = bench.run(queue_factory, nop);
                 if (res == null) continue;
                 System.out.printf("%-50s %-50s %.2f ns\n", bench.name(), queue_factory.name(), res);
             }

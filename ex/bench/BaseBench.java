@@ -7,7 +7,7 @@ public class BaseBench implements ex.Bench {
     }
 
     @Override
-    public Double run(ex.QueueFactory<Integer> factory) {
+    public Double run(ex.QueueFactory<Integer> factory, long nop) {
         var queue = factory.create();
         long start = System.nanoTime();
         for (int i = 0; i < 1000000; i++) {
@@ -15,6 +15,6 @@ public class BaseBench implements ex.Bench {
             queue.try_pop();
         }
         long end = System.nanoTime();
-        return (end - start) / 1_000_000.0;
+        return (end - start - nop) / 1_000_000.0;
     }
 }

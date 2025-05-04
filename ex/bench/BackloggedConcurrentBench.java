@@ -17,7 +17,7 @@ public class BackloggedConcurrentBench implements ex.Bench {
     }
 
     @Override
-    public Double run(ex.QueueFactory<Integer> f) throws Exception {
+    public Double run(ex.QueueFactory<Integer> f, long nop) throws Exception {
         if (!(f instanceof ex.ConcurrentQueueFactory)) return null;
         var factory = (ex.ConcurrentQueueFactory<Integer>)f;
         var queue = factory.create();
@@ -48,6 +48,6 @@ public class BackloggedConcurrentBench implements ex.Bench {
             thread.join();
         }
         long end = System.nanoTime();
-        return (end - start) / (1_000_000.0 * read * write);
+        return (end - start - nop) / (1_000_000.0 * read * write);
     }
 }
