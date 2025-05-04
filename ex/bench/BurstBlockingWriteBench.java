@@ -40,7 +40,8 @@ public class BurstBlockingWriteBench implements ex.Bench {
             public void run() {
                 try {
                     for (int cnt = 0; cnt < 1_000_000; ++cnt) {
-                        Thread.sleep(0, 20_000);
+                        for (var x = System.nanoTime(); System.nanoTime() < x + 10_000; )
+                            ;
                         long start = System.nanoTime();
                         queue.wait_push(0);
                         long end = System.nanoTime();

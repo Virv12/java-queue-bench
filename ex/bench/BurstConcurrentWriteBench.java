@@ -35,17 +35,14 @@ public class BurstConcurrentWriteBench implements ex.Bench {
 
             @Override
             public void run() {
-                try {
-                    for (int cnt = 0; cnt < 1_000_000; ++cnt) {
-                        Thread.sleep(0, 20_000);
-                        long start = System.nanoTime();
-                        var pushed = queue.try_push(0);
-                        assert pushed;
-                        long end = System.nanoTime();
-                        time += end - start - nop;
-                    }
-                } catch (InterruptedException e) {
-                    time = -1;
+                for (int cnt = 0; cnt < 1_000_000; ++cnt) {
+                    for (var x = System.nanoTime(); System.nanoTime() < x + 10_000; )
+                        ;
+                    long start = System.nanoTime();
+                    var pushed = queue.try_push(0);
+                    assert pushed;
+                    long end = System.nanoTime();
+                    time += end - start - nop;
                 }
             }
         };
