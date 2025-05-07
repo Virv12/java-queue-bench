@@ -34,11 +34,12 @@ public class BurstBlockingReadBench implements ex.Bench {
         }
 
         var reader_runnable = new Runnable() {
-            long time = 0;
+            long time = -1;
 
             @Override
             public void run() {
                 try {
+                    long t = 0;
                     for (int cnt = 0; cnt < 1_000_000; ++cnt) {
                         for (var x = System.nanoTime(); System.nanoTime() < x + 10_000; )
                             ;
@@ -46,10 +47,10 @@ public class BurstBlockingReadBench implements ex.Bench {
                         var popped = queue.wait_pop();
                         assert popped != null;
                         long end = System.nanoTime();
-                        time += end - start - nop;
+                        t += end - start - nop;
                     }
+                    time = t;
                 } catch (InterruptedException e) {
-                    time = -1;
                 }
             }
         };
@@ -58,6 +59,7 @@ public class BurstBlockingReadBench implements ex.Bench {
         for (var thread : writers) {
             thread.start();
         }
+        Thread.sleep(1);
         reader.start();
         reader.join();
         for (var thread : writers) {

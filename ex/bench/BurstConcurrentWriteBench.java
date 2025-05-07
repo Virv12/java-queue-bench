@@ -31,10 +31,11 @@ public class BurstConcurrentWriteBench implements ex.Bench {
         }
 
         var writer_runnable = new Runnable() {
-            long time = 0;
+            long time = -1;
 
             @Override
             public void run() {
+                long t = 0;
                 for (int cnt = 0; cnt < 1_000_000; ++cnt) {
                     for (var x = System.nanoTime(); System.nanoTime() < x + 10_000; )
                         ;
@@ -42,8 +43,9 @@ public class BurstConcurrentWriteBench implements ex.Bench {
                     var pushed = queue.try_push(0);
                     assert pushed;
                     long end = System.nanoTime();
-                    time += end - start - nop;
+                    t += end - start - nop;
                 }
+                time = t;
             }
         };
         var writer = ex.affinity.Affinity.pinned(writer_runnable);
@@ -51,6 +53,7 @@ public class BurstConcurrentWriteBench implements ex.Bench {
         for (var thread : readers) {
             thread.start();
         }
+        Thread.sleep(1);
         writer.start();
         writer.join();
         for (var thread : readers) {
