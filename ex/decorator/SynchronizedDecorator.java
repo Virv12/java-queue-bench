@@ -35,12 +35,16 @@ class Synchronized<T> implements ex.BlockingQueue<T> {
 
     @Override
     public synchronized boolean try_push(T item) {
-        return inner.try_push(item);
+        var ret = inner.try_push(item);
+        if (ret) notifyAll();
+        return ret;
     }
 
     @Override
     public synchronized T try_pop() {
-        return inner.try_pop();
+        var ret = inner.try_pop();
+        if (ret != null) notifyAll();
+        return ret;
     }
 
     @Override
