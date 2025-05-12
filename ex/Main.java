@@ -27,7 +27,7 @@ public class Main {
         benches.add(new ex.bench.BaseBench());
         benches.add(new ex.bench.BurstConcurrentReadBench(2));
         benches.add(new ex.bench.BurstConcurrentWriteBench(2));
-        benches.add(new ex.bench.BurstBlockingWriteBench(2));
+        benches.add(new ex.bench.BurstBlockingReadBench(2));
         benches.add(new ex.bench.BurstBlockingWriteBench(2));
         benches.add(new ex.bench.BackloggedConcurrentBench(1, 1));
         benches.add(new ex.bench.BackloggedConcurrentBench(1, 3));

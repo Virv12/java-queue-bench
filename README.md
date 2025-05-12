@@ -56,20 +56,20 @@ A lock decorator that provides thread-safe access to queue operations using Java
 ### BaseBench
 A simple benchmark measuring the performance of queue operations in a single-threaded environment.
 
-### BackloggedConcurrentBench
-A benchmark measuring the performance of concurrent queue operations with backlogged tasks.
+### BackloggedConcurrentBench(r,w)
+A benchmark measuring the performance of concurrent queue operations with `r` backlogged readers and `w` backlogged writers.
 
-### BackloggedBlockingBench
-A benchmark measuring the performance of blocking queue operations with backlogged tasks.
+### BackloggedBlockingBench(r,w)
+A benchmark measuring the performance of blocking queue operations with `r` backlogged readers and `w` backlogged writers.
 
-### BurstBlockingReadBench
-A benchmark measuring the performance of periodic reads from a blocking queue with backlogged writers.
+### BurstBlockingReadBench(w)
+A benchmark measuring the performance of periodic reads from a blocking queue with `w` backlogged writers.
 
-### BurstBlockingWriteBench
-A benchmark measuring the performance of periodic writes to a blocking queue with backlogged readers.
+### BurstBlockingWriteBench(r)
+A benchmark measuring the performance of periodic writes to a blocking queue with `r` backlogged readers.
 
-### BurstConcurrentReadBench
-A benchmark measuring the performance of periodic reads from a concurrent queue with backlogged writers.
+### BurstConcurrentReadBench(w)
+A benchmark measuring the performance of periodic reads from a concurrent queue with `w` backlogged writers.
 
-### BurstConcurrentWriteBench
-A benchmark measuring the performance of periodic writes to a concurrent queue with backlogged readers.
+### BurstConcurrentWriteBench(r)
+A benchmark measuring the performance of periodic writes to a concurrent queue with `r` backlogged readers.
