@@ -13,41 +13,46 @@ public class BackloggedConcurrentBench implements ex.Bench {
 
     @Override
     public String name() {
-        return "BackloggedConcurrentBench(" + read + ", " + write + ")";
+        return "BackloggedConcurrentBench(" + read + "," + write + ")";
     }
 
     @Override
-    public Double run(ex.QueueFactory<Integer> f, long nop) throws Exception {
+    public double[] run(ex.QueueFactory<Integer> f, long nop) throws Exception {
         if (!(f instanceof ex.ConcurrentQueueFactory)) return null;
         var factory = (ex.ConcurrentQueueFactory<Integer>)f;
-        var queue = factory.create();
 
-        var threads = new ArrayList<Thread>();
-        for (int i = 0; i < read; ++i) {
-            threads.add(ex.affinity.Affinity.pinned(() -> {
-                int cnt = 0;
-                while (cnt < 1_000_000 * write) {
-                    cnt += queue.try_pop() != null ? 1 : 0;
-                }
-            }));
-        }
-        for (int i = 0; i < write; ++i) {
-            threads.add(ex.affinity.Affinity.pinned(() -> {
-                int cnt = 0;
-                while (cnt < 1_000_000 * read) {
-                    cnt += queue.try_push(0) ? 1 : 0;
-                }
-            }));
-        }
+        var data = new double[50];
+        for (int idx = 0; idx < data.length; ++idx) {
+            var queue = factory.create();
 
-        long start = System.nanoTime();
-        for (var thread : threads) {
-            thread.start();
+            var threads = new ArrayList<Thread>();
+            for (int i = 0; i < read; ++i) {
+                threads.add(ex.affinity.Affinity.pinned(() -> {
+                    int cnt = 0;
+                    while (cnt < 30_000 * write) {
+                        cnt += queue.try_pop() != null ? 1 : 0;
+                    }
+                }));
+            }
+            for (int i = 0; i < write; ++i) {
+                threads.add(ex.affinity.Affinity.pinned(() -> {
+                    int cnt = 0;
+                    while (cnt < 30_000 * read) {
+                        cnt += queue.try_push(0) ? 1 : 0;
+                    }
+                }));
+            }
+
+            long start = System.nanoTime();
+            for (var thread : threads) {
+                thread.start();
+            }
+            for (var thread : threads) {
+                thread.join();
+            }
+            long end = System.nanoTime();
+            data[idx] = (end - start - nop) / (30_000.0 * read * write);
         }
-        for (var thread : threads) {
-            thread.join();
-        }
-        long end = System.nanoTime();
-        return (end - start - nop) / (1_000_000.0 * read * write);
+        return data;
     }
 }
