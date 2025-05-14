@@ -15,7 +15,7 @@ public class BurstBlockingWriteBench implements ex.Bench {
     }
 
     @Override
-    public Double run(ex.QueueFactory<Integer> f, long nop) throws Exception {
+    public double[] run(ex.QueueFactory<Integer> f, long nop) throws Exception {
         if (!(f instanceof ex.BlockingQueueFactory)) return null;
         var factory = (ex.BlockingQueueFactory<Integer>)f;
         var queue = factory.create();
@@ -34,21 +34,21 @@ public class BurstBlockingWriteBench implements ex.Bench {
         }
 
         var writer_runnable = new Runnable() {
-            long time = -1;
+            double[] data = null;
 
             @Override
             public void run() {
                 try {
-                    long t = 0;
-                    for (int cnt = 0; cnt < 1_000_000; ++cnt) {
+                    var d = new double[100_000];
+                    for (int i = 0; i < 100_000; ++i) {
                         for (var x = System.nanoTime(); System.nanoTime() < x + 10_000; )
                             ;
                         long start = System.nanoTime();
                         queue.wait_push(0);
                         long end = System.nanoTime();
-                        t += end - start - nop;
+                        d[i] = end - start - nop;
                     }
-                    time = t;
+                    data = d;
                 } catch (InterruptedException e) {
                 }
             }
@@ -67,6 +67,6 @@ public class BurstBlockingWriteBench implements ex.Bench {
         for (var thread : readers) {
             thread.join();
         }
-        return writer_runnable.time / 1_000_000.0;
+        return writer_runnable.data;
     }
 }

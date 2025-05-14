@@ -1,6 +1,7 @@
 package ex;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -17,6 +18,7 @@ public class Main {
 
         var decorators = new ArrayList<QueueFactoryDecorator>();
         decorators.add(new ex.decorator.SpinLockDecorator());
+        decorators.add(new ex.decorator.TicketLockDecorator());
         decorators.add(new ex.decorator.SynchronizedDecorator());
         decorators.add(new ex.decorator.LockDecorator());
         decorators.add(new ex.decorator.Lock2Decorator());
@@ -51,14 +53,27 @@ public class Main {
             var end = System.nanoTime();
             nop = Math.min(nop, end - start);
         }
-        System.out.println("nop: " + nop + "ns");
+        System.err.println("nop: " + nop + "ns");
 
         for (var queue_factory : queue_factories) {
             for (var bench : benches) {
-                bench.run(queue_factory, nop);
+                var warmup = bench.run(queue_factory, nop);
+                if (warmup == null) continue;
+
                 var res = bench.run(queue_factory, nop);
-                if (res == null) continue;
-                System.out.printf("%-50s %-50s %.2f ns\n", bench.name(), queue_factory.name(), res);
+                assert res != null;
+                Arrays.sort(res);
+
+                System.out.printf(
+                    "%-50s %-50s %10.2f %10.2f %10.2f %10.2f %10.2f\n",
+                    bench.name(),
+                    queue_factory.name(),
+                    res[res.length * 0 / 4],
+                    res[res.length * 1 / 4],
+                    res[res.length * 2 / 4],
+                    res[res.length * 3 / 4],
+                    res[res.length - 1]
+                );
             }
         }
     }
