@@ -71,7 +71,7 @@ A linked list-based queue implementation that implements the `Queue` interface.
 ## Decorators
 
 ### SpinLockDecorator
-A spinlock implementation that can be used to enhance queue operations with lock-free behavior.
+A spinlock implementation, using a single `AtomicBoolean`, that can be used to enhance queue operations with lock-free behavior.
 
 ### TicketLockDecorator
 A ticket lock implementation that can be used to enhance queue operations with lock-free behavior.
@@ -83,7 +83,8 @@ A synchronized decorator that provides thread-safe access to queue operations us
 A lock decorator that provides thread-safe access to queue operations using Java's `ReentrantLock`.
 
 ### Lock2Decorator
-A lock decorator that provides thread-safe access to queue operations using Java's `ReentrantLock` with two Condition objects.
+A lock decorator that provides thread-safe access to queue operations using Java's `ReentrantLock` with two `Condition` objects,
+one to wait when the queue is full and the other to wait when the queue is empty.
 
 ## Benchmarks
 
@@ -94,11 +95,18 @@ A simple benchmark measuring the performance of queue operations in a single-thr
 A benchmark with `r+w` threads, where `r` are readers and `w` are writers.
 It measures the performance of concurrent queue operations with backlogged readers and writers.
 
-Analogous benchmarks is available for `BackloggedBlockingBench`.
+Analogous benchmarks is available for `BackloggedBlockingBench(r,w)`.
 
 ### BurstBlockingReadBench(w)
 A benchmark with `w+1` threads.
-`w` threads are writing to a blocking queue in a loop, while one thread is reading one element every 10us.
+`w` threads are repeatedly writing to a blocking queue, while one thread is reading one element every 10us.
 It measures the performance of each read operation.
 
-Analogous benchmarks are available for `BurstBlockingWriteBench`, `BurstConcurrentReadBench` and `BurstConcurrentWriteBench`.
+Analogous benchmarks are available for `BurstBlockingWriteBench(w)`, `BurstConcurrentReadBench(r)` and `BurstConcurrentWriteBench(w)`.
+
+## Conclusions
+
+After looking at the benchmarks the following implementations have been observed delivering consistent good performance.
+For basic single-threaded operations: `java.util.ArrayDeque.`.
+For concurrent non-blocking operations: `java.util.concu.ConcurrentLinkedQueue`.
+For blocking operations: `java.util.concurrent.LinkedBlockingQueue`.
