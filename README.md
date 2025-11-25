@@ -139,8 +139,30 @@ Analogous benchmarks are available for `BurstBlockingWriteBench(w)`,
 
 ## Conclusions
 
-After looking at the benchmarks the following implementations have been
-observed delivering consistent good performance.
-For basic single-threaded operations: `java.util.ArrayDeque.`.
-For concurrent non-blocking operations: `java.util.concu.ConcurrentLinkedQueue`.
-For blocking operations: `java.util.concurrent.LinkedBlockingQueue`.
+There is no one-size-fits-all solution, the best choice depends on the specific use case and workload.
+However, some general observations can be made:
+
+In a single threaded environment:
+- `JavaArrayDeque` and `LinkedList` perform the best, but `JavaArrayDeque` is more consistent.
+- Java's standard implementation of the linked list, `JavaLinkedList`, performs worse than our custom `LinkedList`.
+- Introducing locks or synchronization adds significant overhead.
+
+In a blocking environment:
+- `Lock` performs consistently better than `Synchronized`.
+- `Lock2` does not show significant advantages over `Lock`, on `BurstBlockingWriteBench` it actually performs considerably worse.
+- For decorated queues, the decorator choice has a much larger impact on performance than the underlying implementation.
+- Surprisingly, `JavaArrayBlockingQueue` performs poorly compared to `Lock(JavaArrayDeque)` except in `BackloggedBlockingBench(1,1)`.
+- `JavaLinkedBlockingQueue` performs better during reads and worse during writes compared to `Lock(LinkedList)`.
+
+When read operations are more important the best choice is `JavaLinkedBlockingQueue`, when write operations are more important the best choice is `Lock(LinkedList)`.
+
+In a concurrent non-blocking environment:
+- `TicketLock` outperforms `SpinLock` in most benchmarks, also it reduces variability thanks to its fairness property.
+- On average `TickerLock` performs worse than locking decorators such as `Synchronized`, `Lock` and `Lock2` but the 3rd quartile is better.
+- As for blocking queues, the decorator choice has a much larger impact on performance than the underlying implementation.
+- With low contention `ConcurrentArrayQueue` performs better than `JavaArrayBlockingQueue` but is worse with high contention, showing poor scalability.
+- With low contention `JavaConcurrentLinkedQueue` performs better than `JavaLinkedBlockingQueue` but is worse with high contention, showing poor scalability.
+- `JavaConcurrentLinkedQueue` generally outperforms `ConcurrentArrayQueue`, except in `BackloggedConcurrentBench` with more writers than readers.
+- `JavaConcurrentLinkedQueue` is overall slightly better than `Lock(LinkedList)`, especially comparing the 3rd quartile.
+
+With a low number of threads the best choice is `JavaConcurrentLinkedQueue`, with a high number of threads the best choice is `Lock(LinkedList)`.
